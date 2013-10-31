@@ -69,3 +69,6 @@ nunit-*.xml
 *.userprefs
 packaging/
 tools/FAKE.Core
+tools/FSharp.Formatting
+tools/Microsoft.AspNet.Razor
+tools/RazorEngine

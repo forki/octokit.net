@@ -5,6 +5,9 @@ cls
 if not exist tools\FAKE.Core\tools\Fake.exe ( 
 	"tools\nuget\nuget.exe" "install" "FAKE.Core" "-OutputDirectory" "tools" "-ExcludeVersion" "-Prerelease"
 )
+if not exist tools\FSharp.Formatting\lib\net40\FSharp.CodeFormat.dll ( 
+	"tools\nuget\nuget.exe" "install" "FSharp.Formatting" "-OutputDirectory" "tools" "-ExcludeVersion"
+)
 
 SET TARGET="Default"
 

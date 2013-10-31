@@ -1,5 +1,20 @@
 #r @"tools\FAKE.Core\tools\FakeLib.dll"
+
+#I "tools/FSharp.Formatting/lib/net40"
+#I "tools/Microsoft.AspNet.Razor/lib/net40"
+#I "tools/RazorEngine/lib/net40"
+#r "System.Web.dll"
+#r "FSharp.Markdown.dll"
+#r "FSharp.CodeFormat.dll"
+#r "FSharp.Literate.dll"
+#r "FSharp.MetadataFormat.dll"
+#r "System.Web.Razor.dll"
+#r "RazorEngine.dll"
+
 open Fake 
+open FSharp.Literate
+open Fake.Git
+open FSharp.MetadataFormat
 
 let version = "0.1.1" // TODO: Retrieve this from release notes or CI
 let authors = ["GitHub"]
@@ -20,11 +35,12 @@ let testResultsDir = "./testresults"
 let packagingRoot = "./packaging/"
 let packagingDir = packagingRoot @@ "octokit"
 let reactivePackagingDir = packagingRoot @@ "octokit.reactive"
+let apidocsDir = "./docs/apidocs/"
 
 RestorePackages()
 
 Target "Clean" (fun _ ->
-    CleanDirs [buildDir; reactiveBuildDir; testResultsDir; packagingRoot; packagingDir; reactivePackagingDir]
+    CleanDirs [buildDir; reactiveBuildDir; testResultsDir; apidocsDir; packagingRoot; packagingDir; reactivePackagingDir]
 )
 
 Target "BuildApp" (fun _ ->
@@ -51,6 +67,13 @@ Target "IntegrationTests" (fun _ ->
         "The integration tests were skipped because the OCTOKIT_GITHUBUSERNAME and OCTOKIT_GITHUBUSERNAME environment variables are not set. " +
         "Please configure these environment variables for a GitHub test account (DO NOT USE A \"REAL\" ACCOUNT)."
         |> traceImportant 
+)
+
+Target "CreateDocs" (fun _ ->   
+    if isLocalBuild then  // TODO: this needs to be fixed in FSharp.Formatting
+        MetadataFormat.Generate ( buildDir @@ "Release/Net45/Octokit.dll", apidocsDir, ["./help/templates/reference/"])
+
+    WriteStringToFile false "./docs/.nojekyll" ""
 )
 
 Target "CreateOctokitPackage" (fun _ ->
@@ -104,6 +127,7 @@ Target "Default" DoNothing
    ==> "BuildApp"
    ==> "UnitTests"
    ==> "IntegrationTests"
+   ==> "CreateDocs"
    ==> "CreateOctokitPackage"
    ==> "CreateOctokitReactivePackage"
    ==> "Default"
